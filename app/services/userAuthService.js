@@ -47,3 +47,23 @@ return new Promise((resolve , reject)=>{
  
 })
 }
+
+exports.verifyUser = (option)=>{
+    return new Promise((resolve , reject)=>{
+        model.findOne({email:option.email}).then(found =>{
+            if(found.statusCode == option.statusCode){
+                model.findOneAndUpdate({email:option.email},{status:true}).then(updated =>{
+                    if(updated){
+                        resolve({success:true , message:'account verification completed !!!'})
+                    }else{
+                        resolve({success:false , message:'account verification failed !!!'})
+                    }
+                }).catch(err => reject(err));
+            }else{
+                resolve({success:false , message:'invalid email or veririfcation code '})
+            }
+        }).catch(err =>{
+            reject(err);
+        })
+    })
+}
