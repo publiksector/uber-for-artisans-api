@@ -8,4 +8,12 @@ module.exports = function userAuthController (){
             res.json(err);
         })
     }
+
+    this.verifyUser = (req,res)=>{
+        service.verifyUser(req.body).then(data =>{
+            res.json(data)
+        }).catch(err =>{
+            res.json(err);
+        })
+    }
 }
