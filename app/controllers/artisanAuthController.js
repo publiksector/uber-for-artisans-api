@@ -11,4 +11,16 @@ module.exports = function userAuthController() {
         res.json(err);
       });
   };
+
+  this.artisanLogin = (req, res) => {
+
+    service
+      .artisanLogin(req.body.email ,req.body.password)
+      .then(data => {
+        res.json(data);
+      })
+      .catch(err => {
+        res.json(err);
+      });
+  };
 };
