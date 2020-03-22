@@ -22,4 +22,16 @@ module.exports = function userAuthController() {
         res.json(err);
       });
   };
+
+  this.loginUser = (req, res) => {
+
+    service
+      .userLogin(req.body.email ,req.body.password)
+      .then(data => {
+        res.json(data);
+      })
+      .catch(err => {
+        res.json(err);
+      });
+  };
 };
