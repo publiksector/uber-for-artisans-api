@@ -3,6 +3,8 @@ const artisanModel = require('../models/artisan')
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 const mailer = require("../middleware/mailer");
+const Detail = require('../services/userAuthService')
+const token = require('../services/userAuthService');
 exports.registerArtisan = option => {
   return new Promise((resolve, reject) => {
     model
@@ -73,3 +75,30 @@ exports.registerArtisan = option => {
   });
 };
 
+//user login
+exports.artisanLogin = (email , password)=>{
+    return new Promise((resolve , reject)=>{
+        model.findOne({email:email}, { _id: 0, __v: 0  , }).then(user =>{
+            if(user){
+                if(user.status != true)reject({success:false , message:'account not veririfed !!!'})
+                const comparePassword = bcrypt.compareSync(password , user.password)
+                if(comparePassword){
+                    Detail.getUserDetail(user , user.publicId).then(activeUser =>{
+                        console.log(activeUser , 'hmmmmm')
+                        token.generateToken(activeUser).then(token =>{
+                            resolve({success:true , data:{activeUser , token:token },
+                            message:'authentication successfull !!!'
+                            })
+                        }).catch(err => reject(err))
+                    }).catch(err => reject(err))
+                }else{
+                    resolve({success:false , message:'incorrect email or password '})
+                }
+            }else{
+                resolve({success:false , message:'user does not exist !!!'})  
+            }
+        }).catch(err =>{
+            reject(err)
+        })
+    })
+}
