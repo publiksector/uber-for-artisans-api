@@ -4,6 +4,9 @@ const mongoose = require("mongoose");
 const mailer = require("../middleware/mailer");
 const secret = process.env.Secret
 const jwt = require('jsonwebtoken')
+const baseRepo = require('../repository/baseRepository')
+const userRepo = new baseRepo(model)
+const sms = require('../middleware/sms')
 
 //register user
 exports.registerUser = option => {
@@ -28,19 +31,21 @@ exports.registerUser = option => {
             passwordToken: "",
             password: hash,
             status: false,
-            userType: "client"
+            userType: "client",
+            alertType:option.alertType
           };
           model
             .create(userDetails)
             .then(created => {
               if (created) {
-                mailer
+                if(userDetails.alertType == 'email'){
+                  mailer
                   .SignUpMail(userDetails.email, userDetails.statusCode)
                   .then(sent => {
                     if (sent) {
                       resolve({
                         success: true,
-                        message: " registration was successfull !!!"
+                        message: " registration was successfull please check your email  !!!"
                       });
                     } else {
                       resolve({
@@ -50,6 +55,22 @@ exports.registerUser = option => {
                       });
                     }
                   });
+                }else if(userDetails.alertType == 'sms'){
+                  sms.sendToken(userDetails.phoneNumber , userDetails.statusCode).then(sent =>{
+                    if(sent){
+                      resolve({
+                        success: true,
+                        message: " registration was successfull please check ur phone for sms !!!"
+                      });
+                    }else{
+                      resolve({
+                        success: false,
+                        message:
+                          "Error occured while trying to register  !!!"
+                      });
+                    }
+                  })
+                }
               } else {
                 resolve({
                   success: false,
@@ -174,6 +195,38 @@ function getUserDetail(user, Id) {
   }
   
   exports.generateToken = generateToken;
+
+  exports.updateProfile = function(id, data) {
+    return new Promise((resolve, reject) => {
+        userRepo.updateByQuery({ publicId: id }, data)
+        .then(updated => {
+          if (updated) {
+            userRepo.getById(updated._id)
+              .then(user =>
+                resolve({
+                  success: true,
+                  data: user,
+                  message: "your profiles was updated successfully"
+                })
+              )
+              .catch(err =>
+                resolve({
+                  success: false,
+                  data: err,
+                  message: "unable to update user Profile"
+                })
+              );
+          }
+        })
+        .catch(err => {
+          reject({
+            success: false,
+            data: err,
+            message: "could not update profile"
+          });
+        });
+    });
+  };
   
   //verify user token
   function verifyToken(token = "") {
@@ -190,3 +243,5 @@ function getUserDetail(user, Id) {
       });
     });
   }
+
+  exports.verifyToken = verifyToken
