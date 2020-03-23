@@ -14,7 +14,7 @@ const userSchema = new schema({
     imageUrl: { type: String, default: '' },
     imageID: { type: String, default: '' },
     userType:{type:String , default:''},
-    CreatedAt: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now }
 
 }) 
 
