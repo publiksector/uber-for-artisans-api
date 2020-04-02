@@ -13,6 +13,7 @@ module.exports = function(){
     router.put('/complete_signup', middleware.authenticate, multer.upload.single('profile'), authCtrl.completeClientRegistration)
     router.post('/authenticate', authCtrl.loginUser);
     router.put('/update', middleware.authenticate,multer.upload.single('profile'), authCtrl.updateClientProfile)
+    router.post('/logout', middleware.authenticate , authCtrl.logout)
 
 
     return router;
