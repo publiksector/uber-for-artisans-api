@@ -15,6 +15,7 @@
   "author": "Ochoko peter , Okoro obinna , Somto",
   "license": "ISC",
   "dependencies": {
+    "africastalking": "^0.4.5",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "cloudinary": "^1.20.0",
@@ -24,6 +25,7 @@
     "debug": "^4.1.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "ioredis": "^4.16.0",
     "jsonwebtoken": "^8.5.1",
     "mailgun-js": "^0.22.0",
     "mongoose": "^5.9.5",
