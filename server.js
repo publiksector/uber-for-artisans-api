@@ -20,12 +20,25 @@ app.use(morgan('dev'));
 app.use(express.static("public"));
 // app.use(express.json());
 // app.use(express.urlencoded({ extended: false }));
-app.use(bodyparser.urlencoded({extended:true}));
+app.use(bodyparser.urlencoded({ extended: true }));
 app.use(bodyparser.json());
 app.use(cookieparser());
 app.use(cors());
 app.use('/api', rootRouter);
 
+app.use((req, res, next) => {
+        const error = new Error('Not found');
+        error.status = 404;
+        next(error);
+})
+app.use((error, req, res, next) => {
+        res.status(error.status || 500);
+        res.json({
+                error: {
+                        message: error.message
+                }
+        })
+})
 // app.get('/', function (req, res) {
 //     console.log(req.body.Ids.map(e => ObjectId(e)))
 //     _user.find({
