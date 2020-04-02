@@ -15,7 +15,7 @@ module.exports = function userAuthController() {
 
   this.verifyUser = (req, res) => {
     service
-      .verifyUser(req.auth.publicId,req.body)
+      .verifyUser(req.auth.publicId, req.body)
       .then(data => {
         res.json(data);
       })
@@ -24,26 +24,26 @@ module.exports = function userAuthController() {
       });
   };
 
-  this.completeClientRegistration = async(req, res) => {
+  this.completeClientRegistration = async (req, res) => {
     const requestDetails = {
-        image: req.file != null && req.file !== undefined ? req.file.path : null
+      image: req.file != null && req.file !== undefined ? req.file.path : null
     };
 
     if (req.image !== null && req.file !== undefined) {
-        await cloudinary.uploadToCloud(requestDetails.image).then(img => {
-            requestDetails.imageUrl = img.url;
-            requestDetails.imageID = img.ID;
-            return requestDetails;
-        });
+      await cloudinary.uploadToCloud(requestDetails.image).then(img => {
+        requestDetails.imageUrl = img.url;
+        requestDetails.imageID = img.ID;
+        return requestDetails;
+      });
     }
     service.completeUserSignup(req.auth.publicId, requestDetails, req.body).then(data => {
-        res.status(200).send(data)
+      res.status(200).send(data)
     }).catch(err => res.status(500).send(err));
-}
+  }
 
   this.loginUser = (req, res) => {
     service
-      .userLogin(req.body.phoneNumber ,req.body.password)
+      .userLogin(req.body.phoneNumber, req.body.password)
       .then(data => {
         res.json(data);
       })
@@ -72,8 +72,26 @@ module.exports = function userAuthController() {
         res.status(500).send(err);
       });
   };
-  this.logout = (req,res)=>{
-    service.userLogOut(req.auth.publicId).then(data =>{
+
+  this.logout = (req, res) => {
+    service.userLogOut(req.auth.publicId).then(data => {
+      res.status(200).send(data);
+    }).catch(err => {
+      res.status(500).send(err);
+    });
+  }
+
+  this.forgotPasswordToken = (req,res)=>{
+    service.forgotPasswordToken(req.body).then(data => {
+      res.status(200).send(data);
+    }).catch(err => {
+      res.status(500).send(err);
+    });
+  }
+
+  this.changeForgotPassword = (req,res)=>{
+    service.changeForgotPassword(req.auth.publicId , req.body)
+    .then(data => {
       res.status(200).send(data);
     }).catch(err => {
       res.status(500).send(err);
