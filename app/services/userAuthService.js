@@ -106,7 +106,8 @@ exports.completeUserSignup = (publicId, image, data) => {
       imageUrl: image.imageUrl,
       imageID: image.imageID,
       status: true,
-      lastLoggedIn:Date.now()
+      active: true,
+      lastLoggedIn: Date.now()
     }
     model.findOneAndUpdate({ publicId: publicId }, userData).exec((err, updated) => {
       if (err) reject(err);
@@ -134,14 +135,17 @@ exports.userLogin = (phoneNumber, password) => {
         if (user.status != true) reject({ success: false, message: 'account not veririfed !!!' })
         const comparePassword = bcrypt.compareSync(password, user.password)
         if (comparePassword) {
-          getUserDetail(user, user.publicId).then(activeUser => {
-            generateToken(activeUser).then(token => {
-              resolve({
-                success: true, data: { activeUser, token: token },
-                message: 'authentication successfull !!!'
-              })
+          model.findOneAndUpdate({ publicId: user.publicId }, { active: true, lastLoggedIn: Date.now() }).exec((err, updated) => {
+            if (err) reject(err);
+            getUserDetail(user, user.publicId).then(activeUser => {
+              generateToken(activeUser).then(token => {
+                resolve({
+                  success: true, data: { activeUser, token: token },
+                  message: 'authentication successfull !!!'
+                })
+              }).catch(err => reject(err))
             }).catch(err => reject(err))
-          }).catch(err => reject(err))
+          })
         } else {
           resolve({ success: false, message: 'incorrect phone number or password ' })
         }
@@ -154,6 +158,14 @@ exports.userLogin = (phoneNumber, password) => {
   })
 }
 
+exports.userLogOut = (publicId)=>{
+  return new Promise((resolve , reject)=>{
+    model.findOneAndUpdate({ publicId:publicId }, { active: false, lastLoggedIn: Date.now() }).exec((err, updated) => {
+      if(err)reject(err);
+      resolve({success:true , message:'user logged out successfully'});
+    })
+    })
+}
 
 
 //get user details
@@ -170,6 +182,8 @@ function getUserDetail(user, Id) {
           publicId: data.publicId,
           userType: data.userType,
           imageUrl: data.imageUrl,
+          lastLoggedIn: data.lastLoggedIn,
+          active: data.active,
           status: data.status
         };
         resolve(specificUserDetail);
