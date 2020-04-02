@@ -6,10 +6,10 @@ const options = {
   
   // Initialize a service e.g. SMS
   const sms = AfricasTalking.SMS;
-  exports.sendToken = (phoneNumber, token) => {
+  exports.sendToken = ( countryCode, phoneNumber, token) => {
     return new Promise((resolve, reject) => {
       var fullNumber = phoneNumber.substr(1)
-      const numba = "+234" + fullNumber
+      const numba = countryCode + fullNumber
       // Use the service      
       const option = {
         to: [numba],
