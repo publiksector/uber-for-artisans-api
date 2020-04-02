@@ -10,6 +10,7 @@ const userSchema = new schema({
     publicId:{type:mongoose.SchemaTypes.ObjectId},
     passwordToken:{type:Number },
     password: { type: String, default: '' },
+    active: { type: Boolean  , default:false},
     status: { type: Boolean  , default:false},
     verified:{type:Boolean , default:false},
     imageUrl: { type: String, default: '' },
