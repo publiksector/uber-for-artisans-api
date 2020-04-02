@@ -53,22 +53,16 @@ module.exports = function userAuthController() {
   };
 
   this.updateClientProfile = async (req, res) => {
-    console.log("checking file content", req.file );
     var requestDetails = {
       image: req.file != null && req.file !== undefined ? req.file.path : null
     };
-
-    console.log("file detail recieved", requestDetails.image);
     if (req.image !== null && req.file !== undefined) {
       await cloudinary.uploadToCloud(requestDetails.image).then(img => {
-        console.log("Cloudinary details recieved", img.url);
         requestDetails.imageUrl = img.url;
         requestDetails.imageID = img.ID;
         return requestDetails;
       });
     }
-
-    console.log("calling outside await");
     service
       .updateProfile(req.auth.publicId, requestDetails)
       .then(data => {
@@ -78,4 +72,11 @@ module.exports = function userAuthController() {
         res.status(500).send(err);
       });
   };
+  this.logout = (req,res)=>{
+    service.userLogOut(req.auth.publicId).then(data =>{
+      res.status(200).send(data);
+    }).catch(err => {
+      res.status(500).send(err);
+    });
+  }
 };
