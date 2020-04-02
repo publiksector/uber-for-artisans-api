@@ -158,6 +158,7 @@ exports.userLogin = (phoneNumber, password) => {
   })
 }
 
+//user log out method that updates the actual time a user logged out
 exports.userLogOut = (publicId)=>{
   return new Promise((resolve , reject)=>{
     model.findOneAndUpdate({ publicId:publicId }, { active: false, lastLoggedIn: Date.now() }).exec((err, updated) => {
@@ -167,6 +168,76 @@ exports.userLogOut = (publicId)=>{
     })
 }
 
+//forgot password method that sends user verification token which expires after 5 minutes
+exports.forgotPasswordToken = (option)=>{
+  return new Promise((resolve , reject)=>{
+    model.findOne({phoneNumber:option.phoneNumber}).exec((err , exists)=>{
+      if(err)reject(err);
+      if(exists){
+        const gen = Math.floor(1000 + Math.random() * 9000);
+        sms.sendToken(option.countryCode ,option.phoneNumber,gen).then(sent =>{
+          if(sent){
+            model.findOneAndUpdate({phoneNumber:option.phoneNumber} ,{statusCode:gen}).exec((err , updated)=>{
+              if(err)reject(err)
+              getUserDetail(exists, exists.publicId).then(User => {
+                generateToken(User).then(token => {
+                  resolve({
+                    success: true, data: token,
+                    message: 'proceed to verifying your token, this token expires in 5 minutes !!!'
+
+                  })
+                }).catch(err => reject(err))
+              }).catch(err => reject(err))          
+              })
+          }else{
+            resolve({success:false , message:'Error occured while sending token' })
+          }
+        }).catch(err => reject(err))
+        setTimeout(resetStatusCode,300000,exists.publicId)
+
+      }else{
+        resolve({success:false , message:'User does not exists!!' })
+      }
+    })
+  })
+}
+
+//resets user verification token after 5 mins
+function resetStatusCode(publicId){
+  return new Promise((resolve , reject)=>{
+    const gen = Math.floor(1000 + Math.random() * 9000);
+    model.findOneAndUpdate({publicId:publicId}, {statusCode:gen}).exec((err , updated)=>{
+      if(err)reject(err);
+      if(updated){
+        resolve({success:true , message:'token has expired'})
+      }else{
+        resolve({success:false , message:'Error encoutered while resetting token '})
+      }
+    })
+  })
+}
+
+//change user password to a new one he or she selected
+exports.changeForgotPassword = (publicId , data)=>{
+  return new Promise((resolve , reject)=>{
+    model.findOne({publicId:publicId}).exec((err , result)=>{
+      if(err)reject(err)
+      if(result.statusCode == data.statusCode){
+        const new_password = bcrypt.hashSync(data.password , 10)
+        model.findOneAndUpdate({publicId:publicId},{password:new_password}).exec((err, updated)=>{
+          if(err)reject(err);
+          if(updated){
+            resolve({success:true , message:'password successfully changed , proceed to signin'})
+          }else{
+            resolve({success:false , message:'error encountered while changing password'})
+          }
+        })
+      }else{
+        resolve({success:false , message:'Incorrect token inserted !!'})
+      }
+    })
+  })
+}
 
 //get user details
 function getUserDetail(user, Id) {

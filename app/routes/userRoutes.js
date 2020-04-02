@@ -14,7 +14,8 @@ module.exports = function(){
     router.post('/authenticate', authCtrl.loginUser);
     router.put('/update', middleware.authenticate,multer.upload.single('profile'), authCtrl.updateClientProfile)
     router.post('/logout', middleware.authenticate , authCtrl.logout)
-
+    router.post('/forgotpassword_token', authCtrl.forgotPasswordToken)
+    router.post('/change_password', middleware.authenticate , authCtrl.changeForgotPassword)
 
     return router;
 }
