@@ -9,7 +9,8 @@ const middleware = require('../middleware/authenticate')
 module.exports = function(){
     const authCtrl = new authController();
     router.post('/register', authCtrl.registerUser);
-    router.put('/verify', authCtrl.verifyUser);
+    router.put('/verify', middleware.authenticate , authCtrl.verifyUser);
+    router.put('/complete_signup', middleware.authenticate, multer.upload.single('profile'), authCtrl.completeClientRegistration)
     router.post('/authenticate', authCtrl.loginUser);
     router.put('/update', middleware.authenticate,multer.upload.single('profile'), authCtrl.updateClientProfile)
 
