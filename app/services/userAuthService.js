@@ -158,6 +158,20 @@ exports.userLogin = (phoneNumber, password) => {
   })
 }
 
+exports.createChangePassword = (id , data)=>{
+  return new Promise((resolve , reject)=>{
+    const hash = bcrypt.hashSync(data.password , 10)
+    model.findOneAndUpdate({publicId:id}, {password:hash}).exec((err , updated)=>{
+      if(err)reject(err);
+      if(updated){
+        resolve({success:true , message:'password changes successfully'});
+      }else{
+        resolve({success:false , message:'Error encountered while changing password !!'})
+      }
+    })
+  })
+}
+
 //user log out method that updates the actual time a user logged out
 exports.userLogOut = (publicId)=>{
   return new Promise((resolve , reject)=>{
