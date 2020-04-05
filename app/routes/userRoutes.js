@@ -16,6 +16,7 @@ module.exports = function(){
     router.post('/logout', middleware.authenticate , authCtrl.logout)
     router.post('/forgotpassword_token', authCtrl.forgotPasswordToken)
     router.post('/change_password', middleware.authenticate , authCtrl.changeForgotPassword)
+    router.put('/new_password', middleware.authenticate , authCtrl.changePassword)
 
     return router;
 }
