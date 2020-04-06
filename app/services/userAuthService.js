@@ -184,6 +184,7 @@ exports.userLogOut = (publicId)=>{
 
 //forgot password method that sends user verification token which expires after 5 minutes
 exports.forgotPasswordToken = (option)=>{
+  console.log(option , 'kkkkkk')
   return new Promise((resolve , reject)=>{
     model.findOne({phoneNumber:option.phoneNumber}).exec((err , exists)=>{
       if(err)reject(err);
