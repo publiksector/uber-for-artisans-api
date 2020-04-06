@@ -97,4 +97,13 @@ module.exports = function userAuthController() {
       res.status(500).send(err);
     });
   }
+
+  this.changePassword = (req,res)=>{
+    service.createChangePassword(req.auth.publicId , req.body)
+    .then(data => {
+      res.status(200).send(data);
+    }).catch(err => {
+      res.status(500).send(err);
+    });
+  }
 };
