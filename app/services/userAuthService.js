@@ -15,14 +15,38 @@ exports.UserRegistrationToken = option => {
     model.findOne({ phoneNumber: option.phoneNumber }).exec((err, exists) => {
       if (err) reject(err);
       if (exists) {
-        getUserDetail(exists, exists.publicId).then(activeUser => {
-          generateToken(activeUser).then(token => {
-            resolve({
-              success: true, data: token,
-              message: 'please complete your registration !!!'
-            })
+        if(exists.verified == true){
+          getUserDetail(exists, exists.publicId).then(activeUser => {
+            generateToken(activeUser).then(token => {
+              resolve({
+                success: true, data:{token:token , verificationStatus:exists.verified},
+                message: 'please complete your registration !!!'
+              })
+            }).catch(err => reject(err))
           }).catch(err => reject(err))
-        }).catch(err => reject(err))
+        }else{
+          model.findOneAndUpdate({publicId:exists.publicId}, {statusCode:gen})
+          .then(result =>{
+            if(result){
+              sms.sendToken(option.countryCode , option.phoneNumber , gen).then(done =>{
+                if(done){
+                  getUserDetail(exists, exists.publicId).then(activeUser2 => {
+                    generateToken(activeUser2).then(token2 => {
+                      resolve({
+                        success: true, data:token2 ,
+                        message: 'Token re-sent successfully!!!'
+                      })
+                    }).catch(err => reject(err))
+                  }).catch(err => reject(err))
+                }else{
+                  resolve({success:false ,message:'Error sending token'})
+                }
+              }).catch(err => reject(err))
+            }else{
+              resolve({success:false , message:'Error encountered '})
+            }
+          }).catch(err => reject(err))
+        }
       } else {
         const details = {
           phoneNumber: option.phoneNumber,
