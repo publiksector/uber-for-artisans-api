@@ -10,8 +10,6 @@ module.exports = function categoryFunction(){
          mapped[0] != null && mapped[0] !== undefined ? mapped[0] : null,
          mapped[1] != null && mapped[1] !== undefined ? mapped[1] : null
         ];
-        console.log(requestDetails, 'see this well')
-
           if (req.image !== null && req.files !== undefined) {
             await cloudinary.multipleUpload(requestDetails).then(img => {
                 const mapResult = img.map(b => b.url)
