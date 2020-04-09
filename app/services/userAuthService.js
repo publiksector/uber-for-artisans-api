@@ -11,7 +11,10 @@ const sms = require('../middleware/sms')
 //user feeds in his phonenumber and country code and recieves token via sms , also this method returns a jwt token for verifying the token with that which exists in the db
 exports.UserRegistrationToken = option => {
   return new Promise((resolve, reject) => {
-    const gen = Math.floor(1000 + Math.random() * 9000);
+    const value = option.phoneNumber
+    if(value.match(/^(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[\-\.\ \\\/]?)?((?:\(?\d{1,}\)?[\-\.\ \\\/]?){0,})(?:[\-\.\ \\\/]?(?:#|ext\.?|extension|x)[\-\.\ \\\/]?(\d+))?$/i)){
+      if(value.length == 0 || value == '' || value == null || value == undefined) resolve({success:false , message:'Empty details are not allowed'})
+      const gen = Math.floor(1000 + Math.random() * 9000);
     model.findOne({ phoneNumber: option.phoneNumber }).exec((err, exists) => {
       if (err) reject(err);
       if (exists) {
@@ -51,12 +54,13 @@ exports.UserRegistrationToken = option => {
         const details = {
           phoneNumber: option.phoneNumber,
           statusCode: gen,
+          countryCode:option.countryCode,
           publicId: mongoose.Types.ObjectId()
         }
+        sms.sendToken(option.countryCode, option.phoneNumber, gen).then(sent => {
+          if (sent.SMSMessageData.Message.includes('Sent to 1/1')) {
         model.create(details).then(created => {
           if (created) {
-            sms.sendToken(option.countryCode, option.phoneNumber, gen).then(sent => {
-              if (sent) {
                 getUserDetail(created, created.publicId).then(User => {
                   generateToken(User).then(token => {
                     resolve({
@@ -70,12 +74,15 @@ exports.UserRegistrationToken = option => {
               }
             }).catch(err => reject(err))
           } else {
-            resolve({ success: false, message: 'Error creating user account ' })
+            resolve({ success: false, message: 'Error creating user account, please insert valid contact detail  ' })
           }
         }).catch(err => reject(err))
       }
     })
-  })
+    }else{
+      resolve({success:false , message:'invalid contact details inserted'})
+    }
+   })
 };
 
 //user is verified and the status code changes so as to make user not be able to use code again 
