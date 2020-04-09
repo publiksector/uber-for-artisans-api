@@ -6,6 +6,7 @@ const userSchema = new schema({
     address:{type:String , default:''},
     email:{type:String , default:''},
     phoneNumber:{type:String , required:true},
+    countryCode:{type:String , required:true},
     statusCode:{type:Number},
     publicId:{type:mongoose.SchemaTypes.ObjectId},
     passwordToken:{type:Number },
