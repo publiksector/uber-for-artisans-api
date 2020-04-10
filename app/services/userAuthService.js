@@ -12,77 +12,78 @@ const sms = require('../middleware/sms')
 exports.UserRegistrationToken = option => {
   return new Promise((resolve, reject) => {
     const value = option.phoneNumber
-    if(value.match(/^(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[\-\.\ \\\/]?)?((?:\(?\d{1,}\)?[\-\.\ \\\/]?){0,})(?:[\-\.\ \\\/]?(?:#|ext\.?|extension|x)[\-\.\ \\\/]?(\d+))?$/i)){
-      if(value.length == 0 || value == '' || value == null || value == undefined) resolve({success:false , message:'Empty details are not allowed'})
+    if (value.match(/^(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[\-\.\ \\\/]?)?((?:\(?\d{1,}\)?[\-\.\ \\\/]?){0,})(?:[\-\.\ \\\/]?(?:#|ext\.?|extension|x)[\-\.\ \\\/]?(\d+))?$/i)) {
+      if (value.length == 0 || value == '' || value == null || value == undefined) resolve({ success: false, message: 'Empty details are not allowed' })
       const gen = Math.floor(1000 + Math.random() * 9000);
-    model.findOne({ phoneNumber: option.phoneNumber }).exec((err, exists) => {
-      if (err) reject(err);
-      if (exists) {
-        if(exists.verified == true){
-          getUserDetail(exists, exists.publicId).then(activeUser => {
-            generateToken(activeUser).then(token => {
-              resolve({
-                success: true, data:{token:token , verificationStatus:exists.verified},
-                message: 'please complete your registration !!!'
-              })
+      model.findOne({ phoneNumber: option.phoneNumber }).exec((err, exists) => {
+        if (err) reject(err);
+        if (exists) {
+          if (exists.verified == true) {
+            if (exists.status == true) resolve({ success: false, message: 'user already registered !!!' })
+            getUserDetail(exists, exists.publicId).then(activeUser => {
+              generateToken(activeUser).then(token => {
+                resolve({
+                  success: true, data: { token: token, verificationStatus: exists.verified },
+                  message: 'please complete your registration !!!'
+                })
+              }).catch(err => reject(err))
             }).catch(err => reject(err))
-          }).catch(err => reject(err))
-        }else{
-          model.findOneAndUpdate({publicId:exists.publicId}, {statusCode:gen})
-          .then(result =>{
-            if(result){
-              sms.sendToken(option.countryCode , option.phoneNumber , gen).then(done =>{
-                if(done){
-                  getUserDetail(exists, exists.publicId).then(activeUser2 => {
-                    generateToken(activeUser2).then(token2 => {
+          } else {
+            model.findOneAndUpdate({ publicId: exists.publicId }, { statusCode: gen })
+              .then(result => {
+                if (result) {
+                  sms.sendToken(option.countryCode, option.phoneNumber, gen).then(done => {
+                    if (done) {
+                      getUserDetail(exists, exists.publicId).then(activeUser2 => {
+                        generateToken(activeUser2).then(token2 => {
+                          resolve({
+                            success: true, data: token2,
+                            message: 'Token re-sent successfully!!!'
+                          })
+                        }).catch(err => reject(err))
+                      }).catch(err => reject(err))
+                    } else {
+                      resolve({ success: false, message: 'Error sending token' })
+                    }
+                  }).catch(err => reject(err))
+                } else {
+                  resolve({ success: false, message: 'Error encountered ' })
+                }
+              }).catch(err => reject(err))
+          }
+        } else {
+          const details = {
+            phoneNumber: option.phoneNumber,
+            statusCode: gen,
+            countryCode: option.countryCode,
+            publicId: mongoose.Types.ObjectId()
+          }
+          sms.sendToken(option.countryCode, option.phoneNumber, gen).then(sent => {
+            if (sent.SMSMessageData.Message.includes('Sent to 1/1')) {
+              model.create(details).then(created => {
+                if (created) {
+                  getUserDetail(created, created.publicId).then(User => {
+                    generateToken(User).then(token => {
                       resolve({
-                        success: true, data:token2 ,
-                        message: 'Token re-sent successfully!!!'
+                        success: true, data: token,
+                        message: 'proceed to verifying account registration !!!'
                       })
                     }).catch(err => reject(err))
                   }).catch(err => reject(err))
-                }else{
-                  resolve({success:false ,message:'Error sending token'})
+                } else {
+                  resolve({ success: false, message: 'Error signing up user' })
                 }
               }).catch(err => reject(err))
-            }else{
-              resolve({success:false , message:'Error encountered '})
+            } else {
+              resolve({ success: false, message: 'Error creating user account, please insert valid contact detail  ' })
             }
           }).catch(err => reject(err))
         }
-      } else {
-        const details = {
-          phoneNumber: option.phoneNumber,
-          statusCode: gen,
-          countryCode:option.countryCode,
-          publicId: mongoose.Types.ObjectId()
-        }
-        sms.sendToken(option.countryCode, option.phoneNumber, gen).then(sent => {
-          if (sent.SMSMessageData.Message.includes('Sent to 1/1')) {
-        model.create(details).then(created => {
-          if (created) {
-                getUserDetail(created, created.publicId).then(User => {
-                  generateToken(User).then(token => {
-                    resolve({
-                      success: true, data: token,
-                      message: 'proceed to verifying account registration !!!'
-                    })
-                  }).catch(err => reject(err))
-                }).catch(err => reject(err))
-              } else {
-                resolve({ success: false, message: 'Error signing up user' })
-              }
-            }).catch(err => reject(err))
-          } else {
-            resolve({ success: false, message: 'Error creating user account, please insert valid contact detail  ' })
-          }
-        }).catch(err => reject(err))
-      }
-    })
-    }else{
-      resolve({success:false , message:'invalid contact details inserted'})
+      })
+    } else {
+      resolve({ success: false, message: 'invalid contact details inserted' })
     }
-   })
+  })
 };
 
 //user is verified and the status code changes so as to make user not be able to use code again 
@@ -189,42 +190,42 @@ exports.userLogin = (phoneNumber, password) => {
   })
 }
 
-exports.createChangePassword = (id , data)=>{
-  return new Promise((resolve , reject)=>{
-    const hash = bcrypt.hashSync(data.password , 10)
-    model.findOneAndUpdate({publicId:id}, {password:hash}).exec((err , updated)=>{
-      if(err)reject(err);
-      if(updated){
-        resolve({success:true , message:'password changes successfully'});
-      }else{
-        resolve({success:false , message:'Error encountered while changing password !!'})
+exports.createChangePassword = (id, data) => {
+  return new Promise((resolve, reject) => {
+    const hash = bcrypt.hashSync(data.password, 10)
+    model.findOneAndUpdate({ publicId: id }, { password: hash }).exec((err, updated) => {
+      if (err) reject(err);
+      if (updated) {
+        resolve({ success: true, message: 'password changes successfully' });
+      } else {
+        resolve({ success: false, message: 'Error encountered while changing password !!' })
       }
     })
   })
 }
 
 //user log out method that updates the actual time a user logged out
-exports.userLogOut = (publicId)=>{
-  return new Promise((resolve , reject)=>{
-    model.findOneAndUpdate({ publicId:publicId }, { active: false, lastLoggedIn: Date.now() }).exec((err, updated) => {
-      if(err)reject(err);
-      resolve({success:true , message:'user logged out successfully'});
+exports.userLogOut = (publicId) => {
+  return new Promise((resolve, reject) => {
+    model.findOneAndUpdate({ publicId: publicId }, { active: false, lastLoggedIn: Date.now() }).exec((err, updated) => {
+      if (err) reject(err);
+      resolve({ success: true, message: 'user logged out successfully' });
     })
-    })
+  })
 }
 
 //forgot password method that sends user verification token which expires after 5 minutes
-exports.forgotPasswordToken = (option)=>{
-  console.log(option , 'kkkkkk')
-  return new Promise((resolve , reject)=>{
-    model.findOne({phoneNumber:option.phoneNumber}).exec((err , exists)=>{
-      if(err)reject(err);
-      if(exists){
+exports.forgotPasswordToken = (option) => {
+  console.log(option, 'kkkkkk')
+  return new Promise((resolve, reject) => {
+    model.findOne({ phoneNumber: option.phoneNumber }).exec((err, exists) => {
+      if (err) reject(err);
+      if (exists) {
         const gen = Math.floor(1000 + Math.random() * 9000);
-        sms.sendToken(option.countryCode ,option.phoneNumber,gen).then(sent =>{
-          if(sent){
-            model.findOneAndUpdate({phoneNumber:option.phoneNumber} ,{statusCode:gen}).exec((err , updated)=>{
-              if(err)reject(err)
+        sms.sendToken(option.countryCode, option.phoneNumber, gen).then(sent => {
+          if (sent) {
+            model.findOneAndUpdate({ phoneNumber: option.phoneNumber }, { statusCode: gen }).exec((err, updated) => {
+              if (err) reject(err)
               getUserDetail(exists, exists.publicId).then(User => {
                 generateToken(User).then(token => {
                   resolve({
@@ -233,53 +234,53 @@ exports.forgotPasswordToken = (option)=>{
 
                   })
                 }).catch(err => reject(err))
-              }).catch(err => reject(err))          
-              })
-          }else{
-            resolve({success:false , message:'Error occured while sending token' })
+              }).catch(err => reject(err))
+            })
+          } else {
+            resolve({ success: false, message: 'Error occured while sending token' })
           }
         }).catch(err => reject(err))
-        setTimeout(resetStatusCode,300000,exists.publicId)
+        setTimeout(resetStatusCode, 300000, exists.publicId)
 
-      }else{
-        resolve({success:false , message:'User does not exists!!' })
+      } else {
+        resolve({ success: false, message: 'User does not exists!!' })
       }
     })
   })
 }
 
 //resets user verification token after 5 mins
-function resetStatusCode(publicId){
-  return new Promise((resolve , reject)=>{
+function resetStatusCode(publicId) {
+  return new Promise((resolve, reject) => {
     const gen = Math.floor(1000 + Math.random() * 9000);
-    model.findOneAndUpdate({publicId:publicId}, {statusCode:gen}).exec((err , updated)=>{
-      if(err)reject(err);
-      if(updated){
-        resolve({success:true , message:'token has expired'})
-      }else{
-        resolve({success:false , message:'Error encoutered while resetting token '})
+    model.findOneAndUpdate({ publicId: publicId }, { statusCode: gen }).exec((err, updated) => {
+      if (err) reject(err);
+      if (updated) {
+        resolve({ success: true, message: 'token has expired' })
+      } else {
+        resolve({ success: false, message: 'Error encoutered while resetting token ' })
       }
     })
   })
 }
 
 //change user password to a new one he or she selected
-exports.changeForgotPassword = (publicId , data)=>{
-  return new Promise((resolve , reject)=>{
-    model.findOne({publicId:publicId}).exec((err , result)=>{
-      if(err)reject(err)
-      if(result.statusCode == data.statusCode){
-        const new_password = bcrypt.hashSync(data.password , 10)
-        model.findOneAndUpdate({publicId:publicId},{password:new_password}).exec((err, updated)=>{
-          if(err)reject(err);
-          if(updated){
-            resolve({success:true , message:'password successfully changed , proceed to signin'})
-          }else{
-            resolve({success:false , message:'error encountered while changing password'})
+exports.changeForgotPassword = (publicId, data) => {
+  return new Promise((resolve, reject) => {
+    model.findOne({ publicId: publicId }).exec((err, result) => {
+      if (err) reject(err)
+      if (result.statusCode == data.statusCode) {
+        const new_password = bcrypt.hashSync(data.password, 10)
+        model.findOneAndUpdate({ publicId: publicId }, { password: new_password }).exec((err, updated) => {
+          if (err) reject(err);
+          if (updated) {
+            resolve({ success: true, message: 'password successfully changed , proceed to signin' })
+          } else {
+            resolve({ success: false, message: 'error encountered while changing password' })
           }
         })
-      }else{
-        resolve({success:false , message:'Incorrect token inserted !!'})
+      } else {
+        resolve({ success: false, message: 'Incorrect token inserted !!' })
       }
     })
   })
