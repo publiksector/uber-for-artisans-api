@@ -27,7 +27,7 @@ module.exports = function categoryFunction(){
     
     //get all categories
     this.getAllCategories = (req, res)=>{
-      service.getAllCategories(req.params.pagenumber, req.params.pagesize).then(data =>{
+      service.getAllCategories(req.body).then(data =>{
         res.status(200).send(data);
       }).catch(err => {
         res.status(500).send(err);
@@ -36,7 +36,7 @@ module.exports = function categoryFunction(){
 
     //get single category by Id
     this.getCategoryById = (req, res)=>{
-      service.getCategoryById(req.query.id).then(data =>{
+      service.getCategoryById(req.query.id , req.body.location).then(data =>{
         res.status(200).send(data);
       }).catch(err => {
         res.status(500).send(err);
