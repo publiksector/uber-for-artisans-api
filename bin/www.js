@@ -5,7 +5,7 @@
  */
 
 var app = require('../server');
-//var socket = require('../app/Service/SocketService');
+var socket = require('../app/socket').indexSocket;
 
 var http = require('http');
 var normalizePort = require('normalize-port');
@@ -28,7 +28,7 @@ var server = http.createServer(app);
 /*r
 * Initialize socket connection
 */
-
+socket(server);
 /**
  * Listen on provided port, on all network interfaces.
  */
