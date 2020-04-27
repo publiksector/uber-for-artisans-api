@@ -26,6 +26,17 @@ app.use(cookieparser());
 app.use(cors());
 app.use('/api', rootRouter);
 
+
+
+app.get("/negotiation",(req,res)=>{
+        return res.sendFile(__dirname + "/public/negotiationChat.html");
+})
+app.get('/', function (req, res) {
+
+        res.json({ message: "hello world" });
+});
+
+//Error middleware
 app.use((req, res, next) => {
         const error = new Error('Not found');
         error.status = 404;
@@ -50,10 +61,7 @@ app.use((error, req, res, next) => {
 //     })
 // });
 
-app.get('/', function (req, res) {
 
-        res.json({ message: "hello world" });
-});
 dbConfiguration();
 
 module.exports = app;
