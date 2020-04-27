@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+    <link href="/style.css" rel="stylesheet" />
+    <title>Document</title>
+</head>
+<body>
+    <div id="mario-chat">
+        <div id="chat-window">
+            <div id="output">
+            </div>
+            <div id="feedback"></div>
+        </div>
+        <input id="name" type="text" placeholder="name" />
+        <input id="userType" type="text" placeholder="user type" />
+        <input id="sender" type="text" placeholder="sender Id" />
+        <input id="message" type="text" placeholder="Message" />
+        <input id="receiver" type="text" placeholder="receiver Id" />
+        
+        <button id="send" type="button">Send</button> 
+        <button id="onl" type="button">Online</button>       
+        <button id="disconnectBtn" type="button">Exit Groups</button>       
+    </div>
+    <script src="./negotiationChat.js" ></script>
+    <!-- <script src="/notification.js" ></script>  -->
+
+</body>
+</html>
