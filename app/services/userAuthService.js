@@ -164,22 +164,32 @@ exports.userLogin = (phoneNumber, password) => {
   return new Promise((resolve, reject) => {
     model.findOne({ phoneNumber: phoneNumber }, { _id: 0, __v: 0, }).then(user => {
       if (user) {
-        if (user.status != true) reject({ success: false, message: 'account not veririfed !!!' })
-        const comparePassword = bcrypt.compareSync(password, user.password)
-        if (comparePassword) {
-          model.findOneAndUpdate({ publicId: user.publicId }, { active: true, lastLoggedIn: Date.now() }).exec((err, updated) => {
-            if (err) reject(err);
-            getUserDetail(user, user.publicId).then(activeUser => {
-              generateToken(activeUser).then(token => {
-                resolve({
-                  success: true, data: { activeUser, token: token },
-                  message: 'authentication successfull !!!'
-                })
-              }).catch(err => reject(err))
+        if (user.status != true) {
+          getUserDetail(user, user.publicId).then(result => {
+            generateToken(result).then(token => {
+              resolve({
+                success: false, data: token,
+                message: 'account not veririfed  !!!'
+              })
             }).catch(err => reject(err))
-          })
+          }).catch(err => reject(err))
         } else {
-          resolve({ success: false, message: 'incorrect phone number or password ' })
+          const comparePassword = bcrypt.compareSync(password, user.password)
+          if (comparePassword) {
+            model.findOneAndUpdate({ publicId: user.publicId }, { active: true, lastLoggedIn: Date.now() }).exec((err, updated) => {
+              if (err) reject(err);
+              getUserDetail(user, user.publicId).then(activeUser => {
+                generateToken(activeUser).then(token => {
+                  resolve({
+                    success: true, data: { activeUser, token: token },
+                    message: 'authentication successfull !!!'
+                  })
+                }).catch(err => reject(err))
+              }).catch(err => reject(err))
+            })
+          } else {
+            resolve({ success: false, message: 'incorrect phone number or password ' })
+          }
         }
       } else {
         resolve({ success: false, message: 'user does not exist !!!' })
@@ -189,21 +199,6 @@ exports.userLogin = (phoneNumber, password) => {
     })
   })
 }
-
-exports.createChangePassword = (id, data) => {
-  return new Promise((resolve, reject) => {
-    const hash = bcrypt.hashSync(data.password, 10)
-    model.findOneAndUpdate({ publicId: id }, { password: hash }).exec((err, updated) => {
-      if (err) reject(err);
-      if (updated) {
-        resolve({ success: true, message: 'password changes successfully' });
-      } else {
-        resolve({ success: false, message: 'Error encountered while changing password !!' })
-      }
-    })
-  })
-}
-
 //user log out method that updates the actual time a user logged out
 exports.userLogOut = (publicId) => {
   return new Promise((resolve, reject) => {
@@ -286,6 +281,35 @@ exports.changeForgotPassword = (publicId, data) => {
   })
 }
 
+exports.changePassword = (id, data) => {
+  return new Promise((resolve, reject) => {
+    model.findOne({ publicId: id }).then(result =>{
+      if (result) {
+        let dbPassword = result.password
+        let newPassword = data.newPassword
+        let oldPassword = data.password
+        let hashNewPassword = bcrypt.hashSync(newPassword)
+        let comparePassword = bcrypt.compareSync(oldPassword, dbPassword);
+        if (comparePassword === true) {
+          model.findOneAndUpdate({ publicId: id }, { password: hashNewPassword }).exec((err, updated) => {
+            if (err) reject(err);
+            if (updated) {
+              resolve({ success: true, message: 'password was changed successfully !!' })
+            } else {
+              resolve({ success: false, message: 'Error changing password !!!' })
+            }
+          })
+        } else {
+          resolve({ success: false, message: 'invalid password inserted' })
+        }
+      } else {
+        resolve({ success: false, message: 'user no found !!!' })
+      }
+    })
+
+  })
+}
+
 //get user details
 function getUserDetail(user, Id) {
   return new Promise((resolve, reject) => {
@@ -358,6 +382,45 @@ exports.updateProfile = function (id, data) {
   });
 };
 
+
+exports.userProfileDetails = (id) => {
+  return new Promise((resolve, reject) => {
+    model.findOne({ publicId: id }, { "password": 0, "createdAt": 0, "__v": 0, "imageID": 0, "statusCode": 0 }).exec((err, result) => {
+      if (err) reject(err);
+      resolve({ success: true, message: result })
+    })
+  })
+}
+
+exports.editProfileDetails = (id, data) => {
+  return new Promise((resolve, reject) => {
+    let details = {
+      firstName: data.firstName,
+      lastName: data.lastName
+    }
+    model.findOneAndUpdate({ publicId: id }, details).exec((err, updated) => {
+      if (err) reject(err);
+      if (updated) {
+        resolve({ success: true, message: 'user profile updated ' })
+      } else {
+        resolve({ success: false, message: 'could not update user profile !!!' })
+      }
+    })
+  })
+}
+
+exports.addHomeAddress = (id, data) => {
+  return new Promise((resolve, reject) => {
+    model.findOneAndUpdate({ publicId: id }, { address: data.address }).exec((err, result) => {
+      if (err) reject(err);
+      if (result) {
+        resolve({ success: true, message: 'Address added successfully !!' })
+      } else {
+        resolve({ success: false, message: 'error adding address' })
+      }
+    })
+  })
+}
 //verify user token
 function verifyToken(token = "") {
   return new Promise((resolve, reject) => {

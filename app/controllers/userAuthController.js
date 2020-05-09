@@ -52,6 +52,32 @@ module.exports = function userAuthController() {
       });
   };
 
+  this.editProfileDetails = (req,res)=>{
+    service.editProfileDetails(req.auth.publicId , req.body).then(data =>{
+      res.status(200).send(data);
+    }).catch(err => {
+      res.status(500).send(err);
+    });
+  }
+
+
+  this.changePassword = (req,res)=>{
+    service.changePassword(req.auth.publicId , req.body).then(data =>{
+      res.status(200).send(data);
+    }).catch(err => {
+      res.status(500).send(err);
+    });
+  }
+
+
+  this.addAddress = (req,res)=>{
+    service.addHomeAddress(req.auth.publicId , req.body).then(data =>{
+      res.status(200).send(data);
+    }).catch(err => {
+      res.status(500).send(err);
+    });
+  } 
+
   this.updateClientProfile = async (req, res) => {
     var requestDetails = {
       image: req.file != null && req.file !== undefined ? req.file.path : null
@@ -89,17 +115,16 @@ module.exports = function userAuthController() {
     });
   }
 
-  this.changeForgotPassword = (req,res)=>{
-    service.changeForgotPassword(req.auth.publicId , req.body)
-    .then(data => {
-      res.status(200).send(data);
-    }).catch(err => {
+  this.userProfileDetails = (req,res)=>{
+    service.userProfileDetails(req.auth.publicId).then(data =>{
+      res.status(200).send(data)
+    }).catch(err =>{
       res.status(500).send(err);
-    });
+    })
   }
 
-  this.changePassword = (req,res)=>{
-    service.createChangePassword(req.auth.publicId , req.body)
+  this.changeForgotPassword = (req,res)=>{
+    service.changeForgotPassword(req.auth.publicId , req.body)
     .then(data => {
       res.status(200).send(data);
     }).catch(err => {
