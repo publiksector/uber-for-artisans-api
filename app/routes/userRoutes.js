@@ -15,8 +15,10 @@ module.exports = function(){
     router.put('/update', middleware.authenticate,multer.upload.single('profile'), authCtrl.updateClientProfile)
     router.post('/logout', middleware.authenticate , authCtrl.logout)
     router.post('/forgotpassword_token', authCtrl.forgotPasswordToken)
-    router.post('/change_password', middleware.authenticate , authCtrl.changeForgotPassword)
+    router.post('/change_forgot_password', middleware.authenticate , authCtrl.changeForgotPassword)
     router.put('/new_password', middleware.authenticate , authCtrl.changePassword)
-
+    router.get('/user_profile', middleware.authenticate , authCtrl.userProfileDetails);
+    router.put('/edit_user_profile', middleware.authenticate, authCtrl.editProfileDetails)
+    router.put('/add_home_address', middleware.authenticate , authCtrl.addAddress)
     return router;
 }
