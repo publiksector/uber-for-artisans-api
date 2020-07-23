@@ -10,14 +10,14 @@ const options = {
     return new Promise((resolve, reject) => {
       var fullNumber = phoneNumber.substr(1)
       const numba = countryCode + fullNumber
-      // Use the service      
+     // Use the service      
       const option = {
         to: [numba],
         message: `${token} is your Verification code`
       };
+  
       // Send message and capture the response or error
-      sms
-        .send(option)
+      sms.send(option)
         .then(response => {
           resolve(response);
         })

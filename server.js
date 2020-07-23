@@ -61,7 +61,9 @@ app.use((error, req, res, next) => {
 //     })
 // });
 
-
+app.get('/', function(req, res){
+        res.json({message:"hello world"});
+    });
 dbConfiguration();
 
 module.exports = app;

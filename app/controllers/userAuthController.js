@@ -6,22 +6,18 @@ module.exports = function userAuthController() {
     service
       .UserRegistrationToken(req.body)
       .then(data => {
-        res.json(data);
+        res.status(200).send(data);
       })
-      .catch(err => {
-        res.json(err);
-      });
+      .catch(err => res.status(500).send(err));
   };
 
   this.verifyUser = (req, res) => {
     service
       .verifyUser(req.auth.publicId, req.body)
       .then(data => {
-        res.json(data);
+        res.status(200).send(data);
       })
-      .catch(err => {
-        res.json(err);
-      });
+      .catch(err => res.status(500).send(err));
   };
 
   this.completeClientRegistration = async (req, res) => {
@@ -45,11 +41,9 @@ module.exports = function userAuthController() {
     service
       .userLogin(req.body.phoneNumber, req.body.password)
       .then(data => {
-        res.json(data);
+        res.status(200).send(data);
       })
-      .catch(err => {
-        res.json(err);
-      });
+      .catch(err => res.status(500).send(err));
   };
 
   this.editProfileDetails = (req,res)=>{
