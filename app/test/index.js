@@ -20,3 +20,5 @@ describe("Entry Point test", () => {
       });
   });
 });
+
+// "test": "node ./node_modules/mocha/bin/mocha ./app/test/userRoutesTest.js --reporter spec",
