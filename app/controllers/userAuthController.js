@@ -125,4 +125,12 @@ module.exports = function userAuthController() {
       res.status(500).send(err);
     });
   }
+  this.refreshToken = (req,res)=>{
+    service.refreshToken(req.query.id ,)
+    .then(data => {
+      res.status(200).send(data);
+    }).catch(err => {
+      res.status(500).send(err);
+    });
+  }
 };

@@ -20,5 +20,6 @@ module.exports = function(){
     router.get('/user_profile', middleware.authenticate , authCtrl.userProfileDetails);
     router.put('/edit_user_profile', middleware.authenticate, authCtrl.editProfileDetails)
     router.put('/add_home_address', middleware.authenticate , authCtrl.addAddress)
+    router.post('/refresh-token' , authCtrl.refreshToken)
     return router;
 }
