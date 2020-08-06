@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon ./bin/www",
-    "test": "mocha ./app/test/login.js"
+    "test": "mocha ./app/test/categoryRoutesTest.js --timeout 10000"
   },
   "keywords": [
     "artisan",
