@@ -20,7 +20,7 @@ exports.UserRegistrationToken = option => {
         if (exists) {
           if (exists.verified == true) {
             if (exists.status == true) resolve({ success: false, message: 'user already registered !!!' })
-            getUserDetail(exists, exists.publicId).then(activeUser => {
+            getUserDetail(exists.publicId).then(activeUser => {
               generateToken(activeUser).then(token => {
                 resolve({
                   success: true, data: { token: token, verificationStatus: exists.verified },
@@ -34,7 +34,7 @@ exports.UserRegistrationToken = option => {
                 if (result) {
                   sms.sendToken(option.countryCode, option.phoneNumber, gen).then(done => {
                     if (done) {
-                      getUserDetail(exists, exists.publicId).then(activeUser2 => {
+                      getUserDetail(exists.publicId).then(activeUser2 => {
                         generateToken(activeUser2).then(token2 => {
                           resolve({
                             success: true, data: token2,
@@ -62,7 +62,7 @@ exports.UserRegistrationToken = option => {
             if (sent.SMSMessageData.Message.includes('Sent to 1/1')) {
               model.create(details).then(created => {
                 if (created) {
-                  getUserDetail(created, created.publicId).then(User => {
+                  getUserDetail(created.publicId).then(User => {
                     generateToken(User).then(token => {
                       resolve({
                         success: true, data: token,
@@ -141,10 +141,11 @@ exports.completeUserSignup = (publicId, image, data) => {
       active: true,
       lastLoggedIn: Date.now()
     }
+    console.log(userData , 'see user dataa')
     model.findOneAndUpdate({ publicId: publicId }, userData).exec((err, updated) => {
       if (err) reject(err);
       if (updated) {
-        getUserDetail(updated, publicId).then(activeUser => {
+        getUserDetail(publicId).then(activeUser => {
           generateToken(activeUser).then(token => {
             resolve({
               success: true, data: { activeUser, token: token },
@@ -311,7 +312,7 @@ exports.changePassword = (id, data) => {
 }
 
 //get user details
-function getUserDetail(user, Id) {
+function getUserDetail(Id) {
   return new Promise((resolve, reject) => {
 
     //console.log('this is user detail', user.status);
@@ -438,3 +439,13 @@ function verifyToken(token = "") {
 }
 
 exports.verifyToken = verifyToken
+
+exports.refreshToken = (id)=>{
+return new Promise((resolve ,reject)=>{
+  getUserDetail(id).then(user =>{
+    generateToken(user).then(token =>{
+      resolve({status: true , data:{ActiveUser: user.publicId , token:token} })
+    })
+  }).catch(err => reject(err))
+})
+}
