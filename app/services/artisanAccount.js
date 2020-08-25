@@ -34,7 +34,7 @@ exports.AddAccount = (options , Id , publicId)=>{
 
 exports.getArtisanAccount = (id)=>{
     return new Promise((resolve , reject)=>{
-        model.findOne({artisanId:id},{__v:0 , dateCreated:0 , _id:0}).exec((err , exists)=>{
+        model.findOne({artisanId:id},{__v:0 , dateCreated:0 , _id:0 }).exec((err , exists)=>{
             if(err) reject(err)
             if(exists){
                 resolve({success:true , data:exists})
