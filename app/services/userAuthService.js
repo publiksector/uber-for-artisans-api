@@ -34,7 +34,7 @@ exports.UserRegistrationToken = option => {
                 if (result) {
                   sms.sendToken(option.countryCode, option.phoneNumber, gen).then(done => {
                     if (done) {
-                      getUserDetail(exists, exists.publicId).then(activeUser2 => {
+                      getUserDetail(exists.publicId).then(activeUser2 => {
                         generateToken(activeUser2).then(token2 => {
                           resolve({
                             success: true, data: token2,
