@@ -7,6 +7,7 @@ const artisanSchema = new schema({
     email:{type:String , default:""},
     phoneNumber:{type:String , required:true},
     publicId:{type:mongoose.Types.ObjectId},
+    password:{type:String , required:true},
     imageUrl: { type: String, default: '' },
     statusCode:{type:Number},
     imageID: { type: String, default: '' },
@@ -16,7 +17,9 @@ const artisanSchema = new schema({
     status: { type: Boolean  , default:false},
     dob:{type:Date , default:''},
     bvn:{type:Number , default:''},
-    services:[{type:mongoose.Types.ObjectId, ref:'services',  autopopulate: true }],
+    services:[{
+       service_id : {type:mongoose.Types.ObjectId, ref:'services',  autopopulate: true }
+    }],
     lastLoggedIn:{type:Date , default:''},
     createdAt: { type: Date, default: Date.now }
 
