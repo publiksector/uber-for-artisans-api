@@ -159,12 +159,13 @@ exports.completeArtisanSignup = (publicId, data) => {
 }
 
 //user login
-exports.userLogin = (phoneNumber, password) => {
+exports.artisanLogin = (phoneNumber, password) => {
+
   return new Promise((resolve, reject) => {
-    model.findOne({ phoneNumber: phoneNumber }, { _id: 0, __v: 0, }).then(user => {
+    model.findOne({ phoneNumber: phoneNumber }, { _id: 0, __v: 0, services:0 , verified:0 ,active:0 , lastLoggedIn:0,statusCode:0 ,createdAt:0}).then(user => {
       if (user) {
-        if (user.status != true) {
-          getUserDetail(user, user.publicId).then(result => {
+        if (user.status == false) {
+          getUserDetail(user.publicId).then(result => {
             generateToken(result).then(token => {
               resolve({
                 success: false, data: token,
@@ -173,11 +174,15 @@ exports.userLogin = (phoneNumber, password) => {
             }).catch(err => reject(err))
           }).catch(err => reject(err))
         } else {
+          console.log(user.password, 'ffhfhfhjj')
+
           const comparePassword = bcrypt.compareSync(password, user.password)
+
           if (comparePassword) {
             model.findOneAndUpdate({ publicId: user.publicId }, { active: true, lastLoggedIn: Date.now() }).exec((err, updated) => {
+
               if (err) reject(err);
-              getUserDetail(user, user.publicId).then(activeUser => {
+              getUserDetail(user.publicId).then(activeUser => {
                 generateToken(activeUser).then(token => {
                   resolve({
                     success: true, data: { activeUser, token: token },
