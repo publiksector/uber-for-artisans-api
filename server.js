@@ -1,5 +1,5 @@
 var express = require('express');
-var app = express();
+var app = express()
 var morgan = require('morgan');
 var cookieparser = require('cookie-parser');
 var bodyparser = require('body-parser');
