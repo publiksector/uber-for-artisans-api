@@ -1,8 +1,11 @@
 const socket = require('socket.io');
 const negotiationModel = require('../models/negotiationChat');
+const clodinary = require('../middleware/cloudinary')
 const connectedUsers = [];
+const fs = require('fs')
+const { promisify } = require('util');
+const path = require('path')
 const userIds = {}
-
 function addUser(detail) {
     var logo = connectedUsers.indexOf(detail)
     console.log(logo, 'fffff')
@@ -13,6 +16,16 @@ function addUser(detail) {
     }
     return null
 }
+
+const getExtension = (char) => {
+    switch (char) {
+        case "/": return ".jpg"
+        case "i": return ".png";
+        case "R": return ".gif";
+        case "U": return "webp";
+    }
+}
+
 
 function negotiationChat(server) {
     io = socket(server)
@@ -35,6 +48,25 @@ function negotiationChat(server) {
                 }).catch(err => reject(err))
 
             })
+
+
+            socket.on('pix', async image => {
+                let promiseWrite = fs.promises.writeFile;
+                let filename = "";
+                let currentTime = new Date();
+                filename = path.join(__dirname, `../../uploads/images/${currentTime.getTime()}${getExtension(image.charAt(0))}`);
+                let imageCont = "data:image/png;base64," + image
+                let uploader = await clodinary.uploadToCloud(imageCont)
+                // console.log(image.replace(/^data:image\/png;base64,/, "")  , 'gggmmm')
+                await promiseWrite(filename, image.replace(/^data:image\/png;base64,/, ""), 'base64').then(res => {
+                    console.log("success", res)
+                }).catch(err => {
+                    console.log("error in promise", err);
+                })
+
+                // fs.promises
+            })
+
 
             socket.on('typing', (data) => {
                 const receiverIdx = data.receiver
