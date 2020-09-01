@@ -31,7 +31,7 @@ module.exports = function userAuthController() {
   this.artisanLogin = (req, res) => {
 
     service
-      .artisanLogin(req.body.email, req.body.password)
+      .artisanLogin(req.body.phonenumber, req.body.password)
       .then(data => {
         res.json(data);
       })
