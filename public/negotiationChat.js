@@ -2,11 +2,11 @@
 const socket = io.connect(window.location.hostname == 'localhost' ? "http://localhost:8080/negotiation" :
     "https://uberforartisan.herokuapp.com/negotiation")
 
-    
+
 const message = document.getElementById("message"),
     name = document.getElementById("name"),
     senderId = document.getElementById("sender"),
-   //  image = document.getElementById("image"),
+    //  image = document.getElementById("image"),
     userType = document.getElementById("userType"),
     receiverId = document.getElementById("receiver"),
     btn = document.getElementById("send"),
@@ -23,14 +23,14 @@ exitbtn = document.getElementById("disconnectBtn");
 
 // })
 
-document.getElementById('image').addEventListener("change", function(){
-        const reader = new FileReader();
-      reader.onload = function(){
-          const base64 = this.result.replace(/.*base64,/, '')
-          socket.emit('pix', base64)
-      }
-      reader.readAsDataURL(this.files[0])
-        },false)
+document.getElementById('image').addEventListener("change", function () {
+    const reader = new FileReader();
+    reader.onload = function () {
+        const base64 = this.result.replace(/.*base64,/, '')
+        socket.emit('pix', { imagepath: base64, name: name.value })
+    }
+    reader.readAsDataURL(this.files[0])
+}, false)
 
 btn.addEventListener('click', function () {
     socket.emit("sendMessage", { senderId: senderId.value, name: name.value, message: message.value, receiverId: receiverId.value, userType: userType.value, chattime: new Date() })
@@ -43,6 +43,13 @@ onl.addEventListener("click", function () {
 })
 socket.on('online', function (data) {
     feedback.innerHTML = "<p><em>" + data + " Joined the chat</em></p>";
+})
+
+socket.on("emitImage", function (data) {
+    console.log(data, 'see result here')
+    imagefiled.src = data.image.url;
+    output.innerHTML = "<p><strong>" + data.name + "</strong></p>";
+
 })
 
 message.addEventListener('keypress', function () {
