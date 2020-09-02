@@ -54,11 +54,13 @@ function negotiationChat(server) {
                 let promiseWrite = fs.promises.writeFile;
                 let filename = "";
                 let currentTime = new Date();
-                filename = path.join(__dirname, `../../uploads/images/${currentTime.getTime()}${getExtension(image.charAt(0))}`);
-                let imageCont = "data:image/png;base64," + image
-                let uploader = await clodinary.uploadToCloud(imageCont)
+                filename = path.join(__dirname, `../../uploads/images/${currentTime.getTime()}${getExtension(image.imagepath.charAt(0))}`);
+                let imageCont = "data:image/png;base64," + image.imagepath
+                let uploader = await clodinary.uploadToCloud(imageCont);
+                console.log(uploader , 'see uploaded')
+                socket.emit('emitImage', {image:uploader , name:image.name}  , )
                 // console.log(image.replace(/^data:image\/png;base64,/, "")  , 'gggmmm')
-                await promiseWrite(filename, image.replace(/^data:image\/png;base64,/, ""), 'base64').then(res => {
+                await promiseWrite(filename, image.imagepath.replace(/^data:image\/png;base64,/, ""), 'base64').then(res => {
                     console.log("success", res)
                 }).catch(err => {
                     console.log("error in promise", err);
